@@ -1,14 +1,11 @@
-import { Hono } from "hono";
+import "jsr:@std/dotenv/load";
 import { cors } from "hono/cors";
-
-const app = new Hono().basePath("/api/v1");
+import app from "./src/routes/index.ts";
 
 /* 
-
 todo: update for origin for prod url
 origin: ["https://mrsamdev-paddle-game.netlify.app/"], // Configure this for production
 credentials: true,
-
 */
 
 app.use("*", cors());
