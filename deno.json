@@ -2,7 +2,8 @@
   "tasks": {
     "dev": "deno run -A --watch main.ts",
     "db:generate": "deno run -A --node-modules-dir npm:drizzle-kit generate",
-    "db:push": "deno run -A --node-modules-dir npm:drizzle-kit push"
+    "db:push": "deno run -A --node-modules-dir npm:drizzle-kit push",
+    "test": "deno test -A"
   },
   "imports": {
     "@libsql/client": "npm:@libsql/client@^0.14.0",
@@ -13,9 +14,7 @@
   },
   "deploy": {
     "project": "df04187b-83cf-41b1-85cb-4ff1d4ab1fb8",
-    "exclude": [
-      "**/node_modules"
-    ],
+    "exclude": ["**/node_modules"],
     "include": [],
     "entrypoint": "main.ts"
   }
