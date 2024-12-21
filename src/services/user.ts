@@ -54,7 +54,6 @@ export class UserService {
   }
 
   async getTopLeaderboard(): Promise<LeaderboardEntry[]> {
-    // Directly query only top 10 users
     const topUsers = await this.db
       .select({
         githubUsername: users.githubUsername,
@@ -67,7 +66,6 @@ export class UserService {
       .limit(10)
       .all();
 
-    // Add ranks to the limited result set
     return topUsers.map((user, index) => ({
       ...user,
       rank: index + 1,
@@ -75,7 +73,6 @@ export class UserService {
   }
 
   async getUserRank(userId: string): Promise<{ rank: number; totalPlayers: number }> {
-    // Get user's score
     const user = await this.db
       .select({
         score: users.score,
@@ -88,7 +85,6 @@ export class UserService {
       throw new Error("User not found");
     }
 
-    // Count users with higher scores to determine rank
     const higherScores = await this.db
       .select({
         count: sql<number>`count(*)`,
@@ -97,11 +93,10 @@ export class UserService {
       .where(sql`${users.score} > ${user.score}`)
       .get();
 
-    // Get total number of users
     const totalPlayers = await this.getTotalUsers();
 
     return {
-      rank: (higherScores?.count ?? 0) + 1, // Add 1 because the user's own position
+      rank: (higherScores?.count ?? 0) + 1,
       totalPlayers,
     };
   }
