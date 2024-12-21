@@ -12,8 +12,10 @@ authRoutes.get("/github", (c) => {
   return c.redirect(redirectUrl);
 });
 
-authRoutes.get("/github/callback", async (c) => {
-  const code = c.req.query("code");
+authRoutes.post("/github/callback", async (c) => {
+  const body = await c.req.json<{ code: string }>();
+
+  const code = body.code;
 
   if (!code) {
     return c.json({ error: "No code provided" }, 400);
@@ -35,7 +37,7 @@ authRoutes.get("/github/callback", async (c) => {
 
     const token = await sign({ userId: user.id }, env.JWT_SECRET);
 
-    return c.json({ token });
+    return c.json({ token, user });
   } catch (error) {
     return c.json({ error: "Authentication failed" }, 401);
   }

@@ -17,7 +17,7 @@ app.use("*", async (c, next) => {
   await next();
 });
 
-app.get("*", cache({ cacheName: "paddle-server", cacheControl: "max-age=3600", wait: true }));
+// app.get("*", cache({ cacheName: "paddle-server", cacheControl: "max-age=3600", wait: true }));
 
 app.use(
   "*",
