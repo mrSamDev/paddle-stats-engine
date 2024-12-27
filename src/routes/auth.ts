@@ -46,7 +46,7 @@ authRoutes.post("/github/callback", async (c) => {
   }
 });
 
-authRoutes.get("/user", cache(), createAuthMiddleware(), async (c) => {
+authRoutes.get("/user", createAuthMiddleware(), cache(), async (c) => {
   const userId = c.get("jwtPayload").userId;
 
   if (!userId) {
