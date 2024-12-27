@@ -58,7 +58,12 @@ authRoutes.get("/user", createAuthMiddleware(), cache(), async (c) => {
     const userService = new UserService(db);
     const rankInfo = await userService.getUser(userId);
 
-    return c.json(rankInfo);
+    return c.json(rankInfo, {
+      headers: {
+        "Cache-Control": `private, max-age=120`,
+        Vary: "Authorization",
+      },
+    });
   } catch {
     return c.json({ error: "Failed to fetch user rank" }, 500);
   }
