@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { cache } from "hono/cache";
 import { cors } from "hono/cors";
 import env from "../config/env.ts";
 import { createDb } from "../db/client.ts";
@@ -7,6 +6,7 @@ import authRoutes from "./auth.ts";
 import { AppContext } from "../types/hono.ts";
 import leaderboard from "./leaderboard.ts";
 import { createAuthMiddleware } from "../middleware/auth.ts";
+import { cache } from "../middleware/cache.ts";
 
 const db = createDb(env);
 
@@ -17,8 +17,6 @@ app.use("*", async (c, next) => {
   await next();
 });
 
-// app.get("*", cache({ cacheName: "paddle-server", cacheControl: "max-age=3600", wait: true }));
-
 app.use(
   "*",
   cors({
@@ -28,6 +26,7 @@ app.use(
 
 app.route("/auth", authRoutes);
 
+app.get("/leaderboard/*", cache());
 app.use("/leaderboard/*", createAuthMiddleware());
 
 app.route("/leaderboard", leaderboard);
@@ -37,7 +36,6 @@ app.get("/", (c) => c.text("Hello Deno!"));
 app.get("/health", (c) => c.json({ status: "ok" }));
 
 app.onError((err, c) => {
-  console.error(`[${new Date().toISOString()}] Error:`, err);
   return c.json(
     {
       error: "Internal server error",

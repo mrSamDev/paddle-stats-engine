@@ -20,25 +20,6 @@ leaderboard.get("/", async (c) => {
   }
 });
 
-leaderboard.get("/rank", async (c) => {
-  const userId = c.get("userId");
-
-  if (!userId) {
-    return c.json({ error: "Authentication required" }, 401);
-  }
-
-  try {
-    const db = c.get("db");
-    const userService = new UserService(db);
-    const rankInfo = await userService.getUserRank(userId);
-
-    return c.json(rankInfo);
-  } catch (error) {
-    console.error("Rank fetch error:", error);
-    return c.json({ error: "Failed to fetch user rank" }, 500);
-  }
-});
-
 leaderboard.put("/score", async (c) => {
   try {
     const { score } = await c.req.json<{ score: number }>();

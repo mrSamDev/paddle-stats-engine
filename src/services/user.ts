@@ -2,6 +2,7 @@ import { createDb } from "../db/client.ts";
 import { User, users } from "../db/schema.ts";
 import { eq, sql, desc } from "drizzle-orm";
 import { GitHubUserData } from "../types/githhub.ts";
+import { UserReturnType } from "../types/returntypes.ts";
 
 interface LeaderboardEntry {
   rank: number;
@@ -72,9 +73,12 @@ export class UserService {
     }));
   }
 
-  async getUserRank(userId: string): Promise<{ rank: number; totalPlayers: number }> {
+  async getUser(userId: string): Promise<UserReturnType> {
     const user = await this.db
       .select({
+        githubUsername: users.githubUsername,
+        avatarUrl: users.avatarUrl,
+        profileUrl: users.profileUrl,
         score: users.score,
       })
       .from(users)
@@ -85,20 +89,7 @@ export class UserService {
       throw new Error("User not found");
     }
 
-    const higherScores = await this.db
-      .select({
-        count: sql<number>`count(*)`,
-      })
-      .from(users)
-      .where(sql`${users.score} > ${user.score}`)
-      .get();
-
-    const totalPlayers = await this.getTotalUsers();
-
-    return {
-      rank: (higherScores?.count ?? 0) + 1,
-      totalPlayers,
-    };
+    return user;
   }
 
   async getUsersByScore(minScore: number): Promise<User[]> {

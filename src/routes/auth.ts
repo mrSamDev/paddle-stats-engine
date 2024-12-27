@@ -1,9 +1,12 @@
 import env from "../config/env.ts";
 import { Hono } from "hono";
+
 import { GitHubService } from "../services/github.ts";
 import { AppContext } from "../types/hono.ts";
 import { sign } from "hono/jwt";
 import { UserService } from "../services/user.ts";
+import { createAuthMiddleware } from "../middleware/auth.ts";
+import { cache } from "../middleware/cache.ts";
 
 const authRoutes = new Hono<AppContext>();
 
@@ -38,8 +41,26 @@ authRoutes.post("/github/callback", async (c) => {
     const token = await sign({ userId: user.id }, env.JWT_SECRET);
 
     return c.json({ token, user });
-  } catch (error) {
+  } catch {
     return c.json({ error: "Authentication failed" }, 401);
+  }
+});
+
+authRoutes.get("/user", cache(), createAuthMiddleware(), async (c) => {
+  const userId = c.get("jwtPayload").userId;
+
+  if (!userId) {
+    return c.json({ error: "Authentication required" }, 401);
+  }
+
+  try {
+    const db = c.get("db");
+    const userService = new UserService(db);
+    const rankInfo = await userService.getUser(userId);
+
+    return c.json(rankInfo);
+  } catch {
+    return c.json({ error: "Failed to fetch user rank" }, 500);
   }
 });
 
