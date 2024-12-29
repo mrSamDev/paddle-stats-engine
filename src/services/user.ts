@@ -46,6 +46,7 @@ export class UserService {
     await this.db.update(users).set({ score, updatedAt: new Date() }).where(eq(users.id, userId));
 
     const user = await this.db.select().from(users).where(eq(users.id, userId)).get();
+    console.log("user: ", user);
 
     if (!user) {
       throw new Error("User not found");

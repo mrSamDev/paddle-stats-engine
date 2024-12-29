@@ -1,10 +1,11 @@
 import { Hono } from "hono";
 import { UserService } from "../services/user.ts";
 import { AppContext } from "../types/hono.ts";
+import { cache } from "../middleware/cache.ts";
 
 const leaderboard = new Hono<AppContext>();
 
-leaderboard.get("/", async (c) => {
+leaderboard.get("/", cache(), async (c) => {
   try {
     const db = c.get("db");
     const userService = new UserService(db);
@@ -14,8 +15,7 @@ leaderboard.get("/", async (c) => {
       leaderboard,
       totalPlayers: await userService.getTotalUsers(),
     });
-  } catch (error) {
-    console.error("Leaderboard error:", error);
+  } catch {
     return c.json({ error: "Failed to fetch leaderboard" }, 500);
   }
 });
@@ -23,7 +23,8 @@ leaderboard.get("/", async (c) => {
 leaderboard.put("/score", async (c) => {
   try {
     const { score } = await c.req.json<{ score: number }>();
-    const userId = c.get("userId");
+
+    const userId = c.get("jwtPayload").userId;
 
     if (!userId) {
       return c.json({ error: "Authentication required" }, 401);
@@ -36,14 +37,12 @@ leaderboard.put("/score", async (c) => {
     const db = c.get("db");
     const userService = new UserService(db);
 
-    const [updatedUser, rankInfo] = await Promise.all([userService.updateScore(userId, score), userService.getUserRank(userId)]);
+    const [updatedUser] = await Promise.all([userService.updateScore(userId, score)]);
 
     return c.json({
       user: updatedUser,
-      rank: rankInfo,
     });
-  } catch (error) {
-    console.error("Score update error:", error);
+  } catch {
     return c.json({ error: "Failed to update score" }, 500);
   }
 });
@@ -65,7 +64,6 @@ leaderboard.get("/timeframe/:days", async (c) => {
       leaders,
     });
   } catch (error) {
-    console.error("Timeframe leaderboard error:", error);
     return c.json({ error: "Failed to fetch timeframe leaderboard" }, 500);
   }
 });

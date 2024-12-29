@@ -26,7 +26,7 @@ app.use(
 
 app.route("/auth", authRoutes);
 
-app.use("/leaderboard/*", createAuthMiddleware(), cache());
+app.use("/leaderboard/*", createAuthMiddleware());
 
 app.route("/leaderboard", leaderboard);
 

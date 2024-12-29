@@ -46,7 +46,7 @@ authRoutes.post("/github/callback", async (c) => {
   }
 });
 
-authRoutes.get("/user", createAuthMiddleware(), cache(), async (c) => {
+authRoutes.get("/user", createAuthMiddleware(), cache("60"), async (c) => {
   const userId = c.get("jwtPayload").userId;
 
   if (!userId) {
@@ -56,14 +56,9 @@ authRoutes.get("/user", createAuthMiddleware(), cache(), async (c) => {
   try {
     const db = c.get("db");
     const userService = new UserService(db);
-    const rankInfo = await userService.getUser(userId);
+    const userInfo = await userService.getUser(userId);
 
-    return c.json(rankInfo, {
-      headers: {
-        "Cache-Control": `private, max-age=120`,
-        Vary: "Authorization",
-      },
-    });
+    return c.json(userInfo);
   } catch {
     return c.json({ error: "Failed to fetch user rank" }, 500);
   }
