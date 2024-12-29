@@ -6,7 +6,21 @@ import authRoutes from "./auth.ts";
 import { AppContext } from "../types/hono.ts";
 import leaderboard from "./leaderboard.ts";
 import { createAuthMiddleware } from "../middleware/auth.ts";
-import { cache } from "../middleware/cache.ts";
+
+function getRandomString(s: number) {
+  if (s % 2 == 1) {
+    throw new Deno.errors.InvalidData("Only even sizes are supported");
+  }
+  const buf = new Uint8Array(s / 2);
+  crypto.getRandomValues(buf);
+  let ret = "";
+  for (let i = 0; i < buf.length; ++i) {
+    ret += ("0" + buf[i].toString(16)).slice(-2);
+  }
+  return ret;
+}
+
+const id = getRandomString(10);
 
 const db = createDb(env);
 
@@ -32,7 +46,7 @@ app.route("/leaderboard", leaderboard);
 
 app.get("/", (c) => c.text("Hello Deno!"));
 
-app.get("/health", (c) => c.json({ status: "ok" }));
+app.get("/health", (c) => c.json({ status: "ok", id: id }));
 
 app.onError((err, c) => {
   return c.json(
